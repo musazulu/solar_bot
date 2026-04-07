@@ -1,0 +1,40 @@
+{
+  "packages": [
+    {
+      "name": "Basic System",
+      "price": "$500",
+      "supports": ["lights", "phone charging"],
+      "description": "Ideal for small homes. Supports lighting and basic device charging."
+    },
+    {
+      "name": "Medium System",
+      "price": "$1200",
+      "supports": ["tv", "fridge", "lights", "wifi"],
+      "description": "Perfect for medium households. Can power a TV, fridge, lighting, and internet devices."
+    },
+    {
+      "name": "Premium System",
+      "price": "$2000",
+      "supports": ["everything", "multiple appliances"],
+      "description": "Best for large homes or businesses. Supports multiple appliances and heavy usage."
+    }
+  ],
+  "faq": [
+    {
+      "question": "installation",
+      "answer": "Our installation process typically takes 1 to 2 days, depending on the system size and location."
+    },
+    {
+      "question": "warranty",
+      "answer": "We offer a warranty of 1 to 3 years, depending on the selected solar system."
+    },
+    {
+      "question": "payment",
+      "answer": "We accept multiple payment methods including cash and mobile money for your convenience."
+    },
+    {
+      "question": "location",
+      "answer": "We provide installation services in both urban and rural areas."
+    }
+  ]
+}
