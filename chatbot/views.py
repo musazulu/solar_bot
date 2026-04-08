@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 from .models import Lead
 
 # =========================
@@ -13,7 +14,7 @@ with open("chatbot/solar_data.json") as f:
     solar_data = json.load(f)
 
 # =========================
-# TEMP MEMORY (simple)
+# TEMP MEMORY (simple session)
 # =========================
 user_states = {}  # {session_id: state}
 
@@ -23,12 +24,14 @@ user_states = {}  # {session_id: state}
 # =========================
 def check_faq(message):
     for item in solar_data["faq"]:
-        if item["question"] in message:
+        if item["question"].lower() in message:
             return item["answer"]
     return None
 
 
 def recommend_system(message):
+    message = message.lower()
+
     if "fridge" in message or "tv" in message:
         return solar_data["packages"][1]
 
@@ -58,44 +61,36 @@ def chat(request):
     if not user_message:
         return Response({"reply": "Please type your message."})
 
-    # =========================
     # GREETING
-    # =========================
     if "hello" in user_message or "hi" in user_message:
         user_states[session_id] = "start"
         return Response({
             "reply": "Hello 👋 Welcome to SolarBot!\nWhat do you want to power? (TV, fridge, lights, business)"
         })
 
-    # =========================
     # FAQ
-    # =========================
     faq = check_faq(user_message)
     if faq:
         return Response({"reply": faq})
 
-    # =========================
-    # RECOMMENDATION STEP
-    # =========================
+    # RECOMMENDATION
     recommendation = recommend_system(user_message)
     if recommendation:
         user_states[session_id] = "waiting_for_confirmation"
         return Response({
-            "reply": f"⚡ {recommendation['name']} ({recommendation['price']})\n{recommendation['description']}\n\nWould you like us to contact you? (yes/no)"
+            "reply": f"⚡ {recommendation['name']} ({recommendation['price']})\n"
+                     f"{recommendation['description']}\n\n"
+                     f"Would you like us to contact you? (yes/no)"
         })
 
-    # =========================
-    # HANDLE YES
-    # =========================
+    # YES → ask phone
     if state == "waiting_for_confirmation" and user_message in ["yes", "y"]:
         user_states[session_id] = "waiting_for_phone"
         return Response({
             "reply": "Great 👍 Please send your phone number so we can contact you."
         })
 
-    # =========================
-    # HANDLE PHONE
-    # =========================
+    # PHONE → save lead
     if state == "waiting_for_phone" and detect_phone(user_message):
         Lead.objects.create(
             phone=user_message,
@@ -106,25 +101,38 @@ def chat(request):
             "reply": "✅ Thank you! Our team will contact you shortly."
         })
 
-    # =========================
-    # HANDLE NO
-    # =========================
+    # NO → restart
     if state == "waiting_for_confirmation" and user_message in ["no", "n"]:
         user_states[session_id] = "start"
         return Response({
             "reply": "No problem 👍 Tell me what you want to power (TV, fridge, lights, business)."
         })
 
-    # =========================
     # FALLBACK
-    # =========================
     return Response({
         "reply": "I can help you choose a solar system.\nTell me what you want to power (TV, fridge, lights, business)."
     })
 
 
 # =========================
-# WHATSAPP (IGNORE FOR NOW)
+# CREATE ADMIN (TEMP FIX)
+# =========================
+def create_admin(request):
+    User = get_user_model()
+
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="admin123"
+        )
+        return HttpResponse("Admin created successfully ✅")
+
+    return HttpResponse("Admin already exists ⚠️")
+
+
+# =========================
+# WHATSAPP (KEEP READY)
 # =========================
 @csrf_exempt
 def whatsapp_webhook(request):
