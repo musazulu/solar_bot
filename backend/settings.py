@@ -16,9 +16,13 @@ SECRET_KEY = os.getenv(
     "django-insecure-dev-key-change-in-production"
 )
 
-DEBUG = False  # ✅ IMPORTANT FOR RENDER
+DEBUG = False  # IMPORTANT for production
 
-ALLOWED_HOSTS = ["*"]  # Render needs this
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".onrender.com",   # ✅ REQUIRED for Render
+]
 
 
 # =========================
@@ -57,9 +61,14 @@ MIDDLEWARE = [
 
 
 # =========================
-# CORS (ALLOW FRONTEND)
+# CORS (FRONTEND ACCESS)
 # =========================
 CORS_ALLOW_ALL_ORIGINS = True
+
+# (Optional safer version later)
+# CORS_ALLOWED_ORIGINS = [
+#     "https://your-vercel-app.vercel.app",
+# ]
 
 
 # =========================
@@ -117,7 +126,7 @@ USE_TZ = True
 
 
 # =========================
-# STATIC FILES
+# STATIC FILES (IMPORTANT)
 # =========================
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -129,3 +138,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # DEFAULT PK
 # =========================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# =========================
+# SECURITY (OPTIONAL BUT GOOD)
+# =========================
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+    "https://*.vercel.app",
+]
