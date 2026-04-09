@@ -5,13 +5,18 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from pathlib import Path
 from .models import Lead
 
+
 # =========================
-# LOAD DATA
+# LOAD DATA (SAFE FOR RENDER)
 # =========================
-with open("chatbot/solar_data.json") as f:
+BASE_DIR = Path(__file__).resolve().parent
+
+with open(BASE_DIR / "solar_data.json") as f:
     solar_data = json.load(f)
+
 
 # =========================
 # TEMP MEMORY (simple session)
@@ -132,7 +137,7 @@ def create_admin(request):
 
 
 # =========================
-# WHATSAPP (KEEP READY)
+# WHATSAPP WEBHOOK
 # =========================
 @csrf_exempt
 def whatsapp_webhook(request):
